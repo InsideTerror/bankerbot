@@ -141,6 +141,7 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
 ## Invite
 [Click here to invite BankerBot to your server!](https://discord.com/oauth2/authorize?client_id=1363180301693616313)
+[Approve Access to your server for the bot to work!!](https://unbelievaboat.com/applications/authorize?app_id=1433860813692734564)
 
 ## 💬 Contact
 
