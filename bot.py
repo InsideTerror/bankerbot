@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 
 # ===================== BOT CONFIG =====================
-DISCORD_BOT_TOKEN = "GET YOUR OWN CODE"
+DISCORD_BOT_TOKEN = "REPLACE_WITH_REAL_TOKEN"
 # ======================================================
 
 # Enable required intents
@@ -17,6 +17,7 @@ intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
 intents.message_content = True  # Required if using on_message or text-based logic
+#Version 1.2 : Fixed loading order, added error handling for cog loading
 
 # Create bot instance
 bot = commands.Bot(command_prefix="!", intents=intents)
