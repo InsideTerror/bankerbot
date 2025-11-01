@@ -1,4 +1,3 @@
-
 # 🏦 BankerBot — Global Economy Bridge for RP Servers
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
@@ -65,7 +64,7 @@ pip install -r requirements.txt
 ` source bankerbot/bin/activate`
  `pip install -r requirements.txt`
 ### 3. Configure your bot
-Edit the constants in `main.py` and `cogs/economy_bridge.py`:
+Edit the constants in `bot.py` and `cogs/economy_bridge.py`:
 
 -   `DISCORD_TOKEN`
     
