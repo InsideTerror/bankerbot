@@ -1,59 +1,53 @@
+# 🏦 BankerBot — Global Economy Bridge for RP Servers
 
-- `main.py`: Starts the bot, loads cogs asynchronously, syncs slash commands.
-- `economy_bridge.py`: Contains all economic and approval logic.
-- `global_market.db`: Stores applications and transfers.
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![Discord.py](https://img.shields.io/badge/Discord.py-2.4-blueviolet)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/status-Active-success)
 
----
-
-## 🧠 Quality of Life Features
-
-- Server name–based commands (no IDs).
-- Natural language error messages and embeds.
-- Auto sanity-check on exchange rates (warns if unusually high or low).
-- Role check for approvers.
-- Case-insensitive fuzzy guild matching.
-- Uses ephemeral responses for user feedback.
-- Compatible with Linux, Raspberry Pi, and SQLite persistence.
+> **BankerBot** is a Discord bot designed to act as a **global compatibility layer** between roleplay city servers — enabling cross-server economies, currency exchange, and global financial governance.
 
 ---
 
-## 🔐 Configuration Variables
-Inside `economy_bridge.py`:
+## 🌍 Overview
 
-| Variable | Description |
-|-----------|-------------|
-| `CENTRAL_BANK_SERVER_ID` | ID of the main review server |
-| `APPROVAL_CHANNEL_ID` | Channel for new applications |
-| `APPROVER_ROLE_NAME` | Role allowed to approve or deny |
-| `UNB_API_KEY` | UnbelievaBoat API token |
-| `DB_PATH` | SQLite file path |
-| `MIN_RATE`, `MAX_RATE` | Rate limits |
-| `MAX_TRANSFER_USD`, `MAX_TRANSFER_PERCENT` | Transfer safeguards |
-| `API_DELAY` | API cooldown between PATCH requests |
+BankerBot connects multiple Discord servers using the [UnbelievaBoat API](https://unbelievaboat.com/api/docs), allowing each server to:
+- Define its own currency and exchange rate against USD.
+- Opt-in to a shared global economy managed by a **Central Bank server**.
+- Transfer funds between approved servers with automatic conversion rates.
+- Maintain fair governance and prevent abuse through a **World Bank Officer** system.
 
 ---
 
-## 🧾 Slash Commands Summary
+## ✨ Core Features
 
-| Command | Role | Description |
-|----------|------|-------------|
-| `/economy optin` | Guild admin | Submit your server for approval |
-| `/economy approve` | World Bank Officer | Approve pending guilds |
-| `/economy deny` | World Bank Officer | Deny pending guilds |
-| `/economy list` | Public | Show approved guilds |
-| `/economy transfer` | Public | Transfer currency between approved economies |
+### 🏦 Global Market System
+Each participating server can apply to join the global economy with its own:
+- **Currency name**
+- **Exchange rate (vs USD)**
+- **Approval message** that appears in the Central Bank’s approval channel.
+
+### 🌐 Cross-Server Transfers
+Users can safely transfer their UnbelievaBoat balances between approved economies:
+- Automatic conversion using stored exchange rates.  
+- Supports both **cash** and **bank** balances.  
+- Full API integration ensures data consistency.
+
+### 🧾 Central Bank Oversight
+The Central Bank manages:
+- Server applications (approve/deny via interactive buttons).
+- Forced removals from the market (`/economy kick`).
+- Audit logs for all key actions.
+
+### 👮 Role-Based Access Control
+- Only **approved officers** (from a SQLite list) can manage the global market.  
+- Server administrators can voluntarily withdraw their economy.
 
 ---
 
-## 📈 Planned Upgrades
-- Role-based automatic salaries  
-- Global leaderboard  
-- Trade treaties and embargoes  
-- Global taxation  
-- Audit exports and dashboards  
+## ⚙️ Installation
 
----
-
-### 🪙 Summary
-> BankerBot unifies roleplay servers under a shared financial system — linking cities, stabilizing exchange rates, and maintaining realism through the World Bank.
-
+### 1. Clone the repository
+```bash
+git clone https://github.com/yourusername/BankerBot.git
+cd BankerBot
