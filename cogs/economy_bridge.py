@@ -9,9 +9,9 @@ from datetime import datetime, timezone
 # =====================================================
 # CONFIGURATION
 # =====================================================
-CENTRAL_BANK_SERVER_ID = 1431340709356638341
-APPROVAL_CHANNEL_ID = 1433861882158256263
-CENTRAL_BANK_ROLE_ID = 1433860312309960797
+CENTRAL_BANK_SERVER_ID = SERVER_ID
+APPROVAL_CHANNEL_ID = CHANNEL_ID
+CENTRAL_BANK_ROLE_ID = ROLE_ID
 UNB_API_KEY = "REPLACE_WITH_REAL_KEY"
 UNB_BASE_URL = "https://unbelievaboat.com/api/v1"
 DB_PATH = "global_market.db"
