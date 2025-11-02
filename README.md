@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Discord.py](https://img.shields.io/badge/Discord.py-2.4-blueviolet)
-![!License CC BY-NC 4.0](https://img.shields.io/badge/License-CC_20BY_NC_204.0-green)]
+![!License CC BY-NC 4.0](https://img.shields.io/badge/License-CC_20BY_NC_204.0-green)
 ![Status](https://img.shields.io/badge/status-Active-success)
 
 > **BankerBot** is a Discord bot designed to act as a **global compatibility layer** between roleplay city servers — enabling cross-server economies, currency exchange, and centralized market regulation.
