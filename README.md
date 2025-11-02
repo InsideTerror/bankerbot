@@ -6,6 +6,9 @@
 ![Static Badge](https://img.shields.io/badge/Unbelievaboat_API_Version-v1-yellow)
 ![Static Badge](https://img.shields.io/badge/Bot_Status-Active-Green)
 ![Static Badge](https://img.shields.io/badge/Bot_version-2.4-red)
+![Static Badge](https://img.shields.io/badge/SQLite_Version-3.50.-white)
+
+
 
 
 
