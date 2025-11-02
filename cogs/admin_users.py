@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import sqlite3
 
-OWNER_ID = 903665599723479060  # your Discord user ID
+OWNER_ID = USER_ID  # your Discord user ID
 DB_PATH = "approved_users.db"
 
 class UserAdmin(commands.Cog):
