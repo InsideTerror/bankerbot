@@ -33,4 +33,4 @@ To view a copy of this license, visit:
 ---
 
 **Attribution example for modified use:**  
-> “Modified version of BankerBot © 2025 Fritz Teufel — used under CC BY-NC 4.0. Changes made by [Your Name].”
+> “Modified version of BankerBot © 2025 Fritz Teufel — used under CC BY-NC 4.0. Changes made by [Fritz Teufel ].”
