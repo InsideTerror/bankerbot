@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Discord.py](https://img.shields.io/badge/Discord.py-2.4-blueviolet)
 ![!License CC BY-NC 4.0](https://img.shields.io/badge/License-CC_20BY_NC_204.0-green)
-![Status](https://img.shields.io/badge/status-Active-success)
+![Static Badge](https://img.shields.io/badge/Unbelievaboat_API_Version-v1-yellow)
 ![Static Badge](https://img.shields.io/badge/Bot_Status-Active-Green)
 
 
