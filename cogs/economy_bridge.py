@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -9,10 +10,11 @@ from datetime import datetime, timezone
 # =====================================================
 # CONFIGURATION
 # =====================================================
-CENTRAL_BANK_SERVER_ID = SERVER_ID
-APPROVAL_CHANNEL_ID = CHANNEL_ID
-CENTRAL_BANK_ROLE_ID = ROLE_ID
-UNB_API_KEY = "REPLACE_WITH_REAL_KEY"
+CENTRAL_BANK_SERVER_ID = 1431340709356638341
+APPROVAL_CHANNEL_ID = 1433861882158256263
+CENTRAL_BANK_ROLE_ID = 1433860312309960797
+INVITE_CHANNEL_ID = 1433861882158256263
+UNB_API_KEY = "YOUR_UNBELIEVABOAT_API_KEY"
 UNB_BASE_URL = "https://unbelievaboat.com/api/v1"
 DB_PATH = "global_market.db"
 APPROVED_DB = "approved_users.db"
@@ -21,7 +23,7 @@ APPROVED_DB = "approved_users.db"
 MIN_RATE = 0.0001
 MAX_RATE = 1000000.0
 MAX_TRANSFER_USD = 1000000.0
-MAX_TRANSFER_PERCENT = 0.8  # Max 80% of balance per transfer
+MAX_TRANSFER_PERCENT = 0.8
 API_DELAY = 0.25
 # =====================================================
 
@@ -145,45 +147,29 @@ class EconomyBridge(commands.Cog):
                     elif resp.status == 404:
                         print("[Unb GET] ⚠️ User not found")
                     elif resp.status == 401:
-                        print("[Unb GET] ❌ Unauthorized — check API key or permissions")
+                        print("[Unb GET] ⛔ Unauthorized — check API key or permissions")
         except asyncio.TimeoutError:
-            print(f"[Unb GET] ❌ Timeout while fetching {user_id} in {guild_id}")
+            print(f"[Unb GET] ⏰ Timeout while fetching {user_id} in {guild_id}")
         except Exception as e:
-            print(f"[Unb GET] ❌ Exception for {user_id} in {guild_id}: {type(e).__name__} — {e}")
-
+            print(f"[Unb GET] ⚠️ Exception for {user_id} in {guild_id}: {type(e).__name__} — {e}")
         return {"cash": 0, "bank": 0}
-
 
     async def update_balance(self, guild_id: int, user_id: int, cash_change: int = 0, bank_change: int = 0, reason: str = "Global transfer"):
         """Apply a change to a user's UnbelievaBoat balance."""
         url = f"{UNB_BASE_URL}/guilds/{guild_id}/users/{user_id}"
-        headers = {
-            "Authorization": UNB_API_KEY,
-            "Content-Type": "application/json"
-        }
-
-        # Ensure integers — UnbelievaBoat rejects floats silently
-        payload = {
-            "cash": int(cash_change),
-            "bank": int(bank_change),
-            "reason": str(reason)
-        }
-
+        headers = {"Authorization": UNB_API_KEY, "Content-Type": "application/json"}
+        payload = {"cash": int(cash_change), "bank": int(bank_change), "reason": str(reason)}
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
                 async with session.patch(url, headers=headers, json=payload) as resp:
                     text = await resp.text()
                     print(f"[Unb PATCH] {resp.status} for {guild_id}/{user_id}: {text} | payload={payload}")
-
-                    # Accept 200 and 204 as success (some versions return no content)
                     return resp.status in (200, 204)
         except asyncio.TimeoutError:
-            print(f"[Unb PATCH] ❌ Timeout while updating {guild_id}/{user_id}")
+            print(f"[Unb PATCH] ⏰ Timeout while updating {guild_id}/{user_id}")
         except Exception as e:
-            print(f"[Unb PATCH] ❌ Exception for {guild_id}/{user_id}: {type(e).__name__} — {e}")
+            print(f"[Unb PATCH] ⚠️ Exception for {guild_id}/{user_id}: {type(e).__name__} — {e}")
         return False
-
-
 
     # =====================================================
     # EMBED UTILITY
@@ -191,7 +177,7 @@ class EconomyBridge(commands.Cog):
     def update_embed_status(self, embed, approved):
         new_embed = embed.copy()
         new_embed.color = discord.Color.green() if approved else discord.Color.red()
-        status = "✅ Approved" if approved else "⛔ Denied"
+        status = "✅ Approved" if approved else "❌ Denied"
         new_embed.add_field(name="Status", value=status, inline=False)
         return new_embed
 
@@ -207,39 +193,38 @@ class EconomyBridge(commands.Cog):
         @discord.ui.button(label="✅ Approve", style=discord.ButtonStyle.success)
         async def approve(self, interaction: discord.Interaction, _):
             if not self.parent.is_approved(interaction.user.id):
-                await interaction.response.send_message("❌ You are not authorized.", ephemeral=False)
+                await interaction.response.send_message("⛔ You are not authorized.", ephemeral=True)
                 return
             self.parent.db("UPDATE applications SET status='approved', decided_by=?, decided_at=? WHERE guild_id=?",
                            (str(interaction.user.id), datetime.now(timezone.utc).isoformat(), str(self.guild_id)))
             await interaction.message.edit(embed=self.parent.update_embed_status(interaction.message.embeds[0], True), view=None)
-            await self.parent.send_guild_message(self.guild_id, "✅ Your economy has been **approved** by the Central Bank!")
-            await interaction.response.send_message("Approved ✅", ephemeral=False)
+            await self.parent.send_guild_message(self.guild_id, "✅ Your economy has been **approved** by the Central Bank! Please visit [this link](https://unbelievaboat.com/applications/authorize?app_id=1433860813692734564).")
+            await interaction.response.send_message("✅ Approved.", ephemeral=True)
 
-        @discord.ui.button(label="⛔ Deny", style=discord.ButtonStyle.danger)
+        @discord.ui.button(label="❌ Deny", style=discord.ButtonStyle.danger)
         async def deny(self, interaction: discord.Interaction, _):
             if not self.parent.is_approved(interaction.user.id):
-                await interaction.response.send_message("❌ You are not authorized.", ephemeral=False)
+                await interaction.response.send_message("⛔ You are not authorized.", ephemeral=True)
                 return
             self.parent.db("UPDATE applications SET status='denied', decided_by=?, decided_at=? WHERE guild_id=?",
                            (str(interaction.user.id), datetime.now(timezone.utc).isoformat(), str(self.guild_id)))
             await interaction.message.edit(embed=self.parent.update_embed_status(interaction.message.embeds[0], False), view=None)
-            await self.parent.send_guild_message(self.guild_id, "⛔ Your economy application was **denied**.")
-            await interaction.response.send_message("Denied ⛔", ephemeral=False)
+            await self.parent.send_guild_message(self.guild_id, "❌ Your economy application was **denied**.")
+            await interaction.response.send_message("❌ Denied.", ephemeral=True)
 
     # =====================================================
     # COMMANDS
     # =====================================================
     economy = app_commands.Group(name="economy", description="Global market functions")
 
-    # --- Apply to join global market ---
     @economy.command(name="optin", description="Submit your server to join the global market.")
     async def optin(self, interaction: discord.Interaction, currency: str, rate_usd: float, note: str = ""):
         g = interaction.guild
         if not g or not interaction.user.guild_permissions.manage_guild:
-            await interaction.response.send_message("❌ You need Manage Server permission.", ephemeral=False)
+            await interaction.response.send_message("⛔ You need Manage Server permission.", ephemeral=True)
             return
         if rate_usd < MIN_RATE or rate_usd > MAX_RATE:
-            await interaction.response.send_message("⚠️ Invalid rate.", ephemeral=False)
+            await interaction.response.send_message("⚠️ Invalid rate.", ephemeral=True)
             return
 
         now = datetime.now(timezone.utc).isoformat()
@@ -255,12 +240,12 @@ class EconomyBridge(commands.Cog):
             note=excluded.note
         """, (str(g.id), g.name, currency, rate_usd, "pending", str(interaction.user.id), now, note))
 
-        await interaction.response.send_message("✅ Application submitted to the Central Bank.", ephemeral=False)
+        await interaction.response.send_message("✅ Application submitted to the Central Bank.", ephemeral=True)
 
         channel = self.bot.get_channel(APPROVAL_CHANNEL_ID)
         if channel:
             embed = discord.Embed(
-                title="🌍 New Market Application",
+                title="🏦 New Market Application",
                 description=f"**Guild:** {g.name}\n**Currency:** {currency}\n**Rate:** ${rate_usd:.4f}\n**Requested by:** {interaction.user.display_name}",
                 color=discord.Color.gold(),
                 timestamp=datetime.now(timezone.utc)
@@ -269,156 +254,144 @@ class EconomyBridge(commands.Cog):
                 embed.add_field(name="Note", value=note, inline=False)
             await channel.send(embed=embed, view=self.ApplicationView(self, g.id))
 
-    async def update_balance(self, guild_id: int, user_id: int, cash_change: int = 0, bank_change: int = 0, reason: str = "Global transfer"):
-        url = f"{UNB_BASE_URL}/guilds/{guild_id}/users/{user_id}"
-        headers = {"Authorization": UNB_API_KEY}
-        payload = {"cash": cash_change, "bank": bank_change, "reason": reason}
+        invite_link = await self.get_central_bank_invite()
+        if invite_link:
+            try:
+                await interaction.user.send(
+                    f"🏦 Thank you for applying to the **Global Market**.\n"
+                    f"Please join the **Central Bank** server below to complete verification:\n\n{invite_link}"
+                )
+                await interaction.followup.send("📩 An invite link has been sent to your DMs for verification.", ephemeral=True)
+            except discord.Forbidden:
+                await interaction.followup.send("⚠️ I couldn’t DM you the invite link. Please enable DMs from server members.", ephemeral=True)
+        else:
+            await interaction.followup.send("⚠️ Could not generate an invite link — contact a Central Bank officer.", ephemeral=True)
 
-        async with aiohttp.ClientSession() as session:
-            async with session.patch(url, headers=headers, json=payload) as resp:
-                text = await resp.text()
-                print(f"[Unb PATCH] {resp.status} for {guild_id}/{user_id}: {text} | payload={payload}")
-            return resp.status == 200
+    async def get_central_bank_invite(self):
+        """Creates or retrieves a reusable invite to the Central Bank server."""
+        guild = self.bot.get_guild(CENTRAL_BANK_SERVER_ID)
+        if guild is None:
+            print("⚠️ Central Bank guild not found.")
+            return None
+        channel = guild.get_channel(INVITE_CHANNEL_ID)
+        if not channel:
+            print("⚠️ Invite channel not found in Central Bank guild.")
+            return None
+        invites = await channel.invites()
+        existing = next((i for i in invites if not i.max_uses and not i.max_age), None)
+        if existing:
+            return existing.url
+        invite = await channel.create_invite(max_age=0, max_uses=0, unique=False)
+        return invite.url
 
-
-    # --- Withdraw server ---
     @economy.command(name="withdraw", description="Withdraw your server from the global market.")
     async def withdraw(self, interaction: discord.Interaction):
         g = interaction.guild
         if not g or not self.is_admin(interaction.user):
-            await interaction.response.send_message("❌ Only administrators can withdraw.", ephemeral=False)
+            await interaction.response.send_message("⛔ Only administrators can withdraw.", ephemeral=True)
             return
         self.db("DELETE FROM applications WHERE guild_id=?", (str(g.id),))
-        await interaction.response.send_message(f"🏳️ {g.name} withdrawn from global market.", ephemeral=False)
+        await interaction.response.send_message(f"🏳️ {g.name} withdrawn from global market.", ephemeral=True)
         self.log_audit("withdraw", interaction.user, g)
 
-    # --- List approved economies ---
     @economy.command(name="list", description="List all approved economies.")
     async def list(self, interaction: discord.Interaction):
         rows = self.db("SELECT guild_name,currency_name,rate_usd FROM applications WHERE status='approved'")
         if not rows:
-            await interaction.response.send_message("No approved economies yet.", ephemeral=False)
+            await interaction.response.send_message("No approved economies yet.", ephemeral=True)
             return
         msg = "\n".join(f"• **{r[0]}** — {r[1]} (${r[2]:.4f})" for r in rows)
-        await interaction.response.send_message(msg, ephemeral=False)
+        await interaction.response.send_message(msg, ephemeral=True)
 
-    # --- Kick guild (approved officers only) ---
     @economy.command(name="kick", description="Remove a guild from the global market (approved users only).")
     async def kick(self, interaction: discord.Interaction, guild_name: str):
         if not self.is_approved(interaction.user.id):
-            await interaction.response.send_message("❌ You are not authorized to use this command.", ephemeral=False)
+            await interaction.response.send_message("⛔ You are not authorized to use this command.", ephemeral=True)
             self.log_audit("kick_attempt_unauthorized", interaction.user, guild_name, "Unauthorized attempt.")
             return
-
         g = self.find_guild_by_name(guild_name)
         if not g:
-            await interaction.response.send_message("⚠️ Guild not found.", ephemeral=False)
+            await interaction.response.send_message("⚠️ Guild not found.", ephemeral=True)
             return
         self.db("DELETE FROM applications WHERE guild_id=?", (str(g.id),))
-        await self.send_guild_message(g.id, "🚫 Your economy has been **removed** by the Central Bank.")
-        await interaction.response.send_message(f"🚫 {g.name} removed from market.", ephemeral=False)
+        await self.send_guild_message(g.id, "🏦 Your economy has been **removed** by the Central Bank.")
+        await interaction.response.send_message(f"🏦 {g.name} removed from market.", ephemeral=True)
         self.log_audit("kick", interaction.user, g)
 
-    # =====================================================
-    # 🏦 TRANSFER FUNDS BETWEEN SERVERS (FIXED)
-    # =====================================================
     @economy.command(name="transfer", description="Transfer funds between global market servers.")
     async def transfer(self, interaction: discord.Interaction, target_server: str, amount: float, mode: str = "cash"):
-            """Transfer your funds between two approved economies, correctly formatted for UnbelievaBoat API."""
-            try:
-                await interaction.response.defer(thinking=True)
+        """Transfer your funds between two approved economies."""
+        try:
+            await interaction.response.defer(thinking=True)
+            user = interaction.user
+            origin_guild = interaction.guild
+            if origin_guild is None:
+                await interaction.followup.send("⚠️ Could not detect your server context.", ephemeral=True)
+                return
 
-                user = interaction.user
-                origin_guild = interaction.guild
-                if origin_guild is None:
-                    await interaction.followup.send("❌ Could not detect your server context.", ephemeral=False)
+            target_guild = self.find_guild_by_name(target_server)
+            if target_guild is None:
+                await interaction.followup.send("⚠️ Target server not found.", ephemeral=True)
+                return
+
+            origin_row = self.db("SELECT currency_name, rate_usd FROM applications WHERE guild_id=? AND status='approved'", (str(origin_guild.id),))
+            target_row = self.db("SELECT currency_name, rate_usd FROM applications WHERE guild_id=? AND status='approved'", (str(target_guild.id),))
+            if not origin_row or not target_row:
+                await interaction.followup.send("⛔ One or both servers are not in the approved global economy.", ephemeral=True)
+                return
+
+            origin_currency, origin_rate = origin_row[0]
+            target_currency, target_rate = target_row[0]
+
+            usd_value = amount * origin_rate
+            if usd_value > MAX_TRANSFER_USD:
+                await interaction.followup.send("⚠️ Transfer exceeds global limit.", ephemeral=True)
+                return
+
+            target_amount = usd_value / target_rate
+            balances = await self.get_balance(origin_guild.id, user.id)
+            cash_bal = balances.get("cash", 0)
+            bank_bal = balances.get("bank", 0)
+
+            if mode.lower() == "bank":
+                if bank_bal < amount:
+                    await interaction.followup.send(f"⛔ Insufficient bank balance: you have {bank_bal:.2f} {origin_currency}.", ephemeral=True)
                     return
-
-                # Find target guild
-                target_guild = self.find_guild_by_name(target_server)
-                if target_guild is None:
-                    await interaction.followup.send("⚠️ Target server not found.", ephemeral=False)
+                cash_delta_origin = 0
+                bank_delta_origin = -int(amount)
+            else:
+                if cash_bal < amount:
+                    await interaction.followup.send(f"⛔ Insufficient cash balance: you have {cash_bal:.2f} {origin_currency}.", ephemeral=True)
                     return
+                cash_delta_origin = -int(amount)
+                bank_delta_origin = 0
 
-                # Fetch currency info
-                origin_row = self.db("SELECT currency_name, rate_usd FROM applications WHERE guild_id=? AND status='approved'",
-                                    (str(origin_guild.id),))
-                target_row = self.db("SELECT currency_name, rate_usd FROM applications WHERE guild_id=? AND status='approved'",
-                                    (str(target_guild.id),))
-                if not origin_row or not target_row:
-                    await interaction.followup.send("❌ One or both servers are not in the approved global economy.", ephemeral=False)
-                    return
+            cash_delta_target = int(target_amount)
+            bank_delta_target = 0
 
-                origin_currency, origin_rate = origin_row[0]
-                target_currency, target_rate = target_row[0]
+            ok_origin = await self.update_balance(origin_guild.id, user.id, cash_change=cash_delta_origin, bank_change=bank_delta_origin, reason=f"Global transfer to {target_guild.name}")
+            if not ok_origin:
+                await interaction.followup.send("⚠️ Transfer failed when debiting your origin account.", ephemeral=True)
+                self.log_audit("transfer_failed", user, origin_guild, f"Debit failed: {amount} {origin_currency}")
+                return
 
-                # Calculate USD value then target amount
-                usd_value = amount * origin_rate
-                if usd_value > MAX_TRANSFER_USD:
-                    await interaction.followup.send("⚠️ Transfer exceeds global limit.", ephemeral=False)
-                    return
+            ok_target = await self.update_balance(target_guild.id, user.id, cash_change=cash_delta_target, bank_change=bank_delta_target, reason=f"Global transfer from {origin_guild.name}")
+            if not ok_target:
+                await interaction.followup.send("⚠️ Transfer failed when crediting target account.", ephemeral=True)
+                self.log_audit("transfer_failed", user, target_guild, f"Credit failed: {target_amount:.2f} {target_currency}")
+                return
 
-                target_amount = usd_value / target_rate
+            self.log_audit("transfer", user, target_guild, f"{amount:.2f} {origin_currency} → {target_amount:.2f} {target_currency}")
+            await interaction.followup.send(
+                f"💸 **Global Transfer Complete!**\n"
+                f"From: `{origin_guild.name}` → To: `{target_guild.name}`\n"
+                f"Amount: `{amount:.2f} {origin_currency}` → `{target_amount:.2f} {target_currency}`\n"
+                f"🌍 Exchange rate: 1 {origin_currency} = ${(origin_rate):.4f} USD"
+            )
 
-                # Fetch balances via API
-                balances = await self.get_balance(origin_guild.id, user.id)
-                cash_bal = balances.get("cash", 0)
-                bank_bal = balances.get("bank", 0)
-
-                # Choose mode
-                if mode.lower() == "bank":
-                    if bank_bal < amount:
-                        await interaction.followup.send(f"❌ Insufficient bank balance: you have {bank_bal:.2f} {origin_currency}.", ephemeral=False)
-                        return
-                    cash_delta_origin = 0
-                    bank_delta_origin = -int(amount)
-                else:
-                    if cash_bal < amount:
-                        await interaction.followup.send(f"❌ Insufficient cash balance: you have {cash_bal:.2f} {origin_currency}.", ephemeral=False)
-                        return
-                    cash_delta_origin = -int(amount)
-                    bank_delta_origin = 0
-
-                # Target credit always as cash by default
-                cash_delta_target = int(target_amount)
-                bank_delta_target = 0
-
-                # Perform origin deduction
-                ok_origin = await self.update_balance(origin_guild.id, user.id,
-                                                    cash_change=cash_delta_origin,
-                                                    bank_change=bank_delta_origin,
-                                                    reason=f"Global transfer to {target_guild.name}")
-                if not ok_origin:
-                    await interaction.followup.send("⚠️ Transfer failed when debiting your origin account.", ephemeral=False)
-                    self.log_audit("transfer_failed", user, origin_guild, f"Debit failed: {amount} {origin_currency}")
-                    return
-
-                # Perform target credit
-                ok_target = await self.update_balance(target_guild.id, user.id,
-                                                    cash_change=cash_delta_target,
-                                                    bank_change=bank_delta_target,
-                                                    reason=f"Global transfer from {origin_guild.name}")
-                if not ok_target:
-                    await interaction.followup.send("⚠️ Transfer failed when crediting target account.", ephemeral=False)
-                    self.log_audit("transfer_failed", user, target_guild, f"Credit failed: {target_amount:.2f} {target_currency}")
-                    return
-
-                # Log and inform success
-                self.log_audit("transfer", user, target_guild,
-                            f"{amount:.2f} {origin_currency} → {target_amount:.2f} {target_currency}")
-                await interaction.followup.send(
-                    f"💸 Successfully transferred **{amount:.2f} {origin_currency}** from **{origin_guild.name}** → **{target_amount:.2f} {target_currency}** in **{target_guild.name}**",
-                    ephemeral=False
-                )
-
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                try:
-                    await interaction.followup.send(f"❌ Internal error: {type(e).__name__} — {e}", ephemeral=False)
-                except:
-                    pass
-
+        except Exception as e:
+            print(f"[Transfer Error] {type(e).__name__}: {e}")
+            await interaction.followup.send(f"⚠️ Transfer failed: {e}", ephemeral=True)
 
 
 async def setup(bot):
